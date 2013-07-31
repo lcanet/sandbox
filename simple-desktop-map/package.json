@@ -1,0 +1,15 @@
+{
+    "name": "test-app",
+    "description": "Test app.",
+    "version": "0.0.1",
+    "main": "app.html",
+    "window": {
+        "width": 800,
+        "height": 600,
+        "toolbar": false
+    },
+    "dependencies": {
+        // just an exemple of node dependencies ... unused here
+        "underscore": "1.5.1"
+    }
+}

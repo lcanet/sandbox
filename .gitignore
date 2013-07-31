@@ -1,0 +1,6 @@
+simple-desktop-map/.idea
+simple-desktop-map/*.dll
+simple-desktop-map/node_modules
+simple-desktop-map/nw.exe
+simple-desktop-map/nw.pak
+simple-desktop-map/nwsnapshot.exe

@@ -9,7 +9,6 @@
         "toolbar": false
     },
     "dependencies": {
-        // just an exemple of node dependencies ... unused here
         "underscore": "1.5.1"
     }
 }

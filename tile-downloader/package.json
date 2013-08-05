@@ -1,0 +1,15 @@
+{
+    "name": "test-app",
+    "description": "Test app.",
+    "version": "0.0.1",
+    "main": "app.html",
+    "window": {
+        "width": 800,
+        "height": 600,
+        "toolbar": false
+    },
+    "dependencies": {
+        "proj4node": "0.0.6",
+        "jsts": "0.13.2"
+    }
+}

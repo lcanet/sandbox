@@ -4,3 +4,13 @@ simple-desktop-map/node_modules
 simple-desktop-map/nw.exe
 simple-desktop-map/nw.pak
 simple-desktop-map/nwsnapshot.exe
+tile-downloader/.idea/
+tile-downloader/ffmpegsumo.dll
+tile-downloader/icudt.dll
+tile-downloader/libEGL.dll
+tile-downloader/libGLESv2.dll
+tile-downloader/node_modules/
+tile-downloader/nw.exe
+tile-downloader/nw.pak
+tile-downloader/nwsnapshot.exe
+tile-downloader/out/

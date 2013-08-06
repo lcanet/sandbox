@@ -1,34 +1,13 @@
 var http = require('http'),
-    downloader = require('./downloader.js');
+    downloader = require('./js/downloader.js'),
+    proxy = require('./js/proxy.js')
+;
 
 // create NODE JS proxy that reinjects referer
-http.createServer(function(request, response) {
-    var proxyReq = http.get({
-            host: 'wxs.ign.fr',
-            path:request.url ,
-            headers: {
-                Referer: 'http://localhost'
-            }
-        },
-        function(proxyRes){
-            response.setHeader('Content-Type', proxyRes.headers['Content-Type']);
-            response.writeHead(proxyRes.statusCode);
-            proxyRes.on('data', function (chunk) {
-                response.write(chunk, 'binary');
-            });
-            proxyRes.on('end', function(){
-                response.end();
-            });
-        });
-    proxyReq.on('error', function(e){
-        console.log("Proxy Req err", e);
-    });
-}).listen(56471);
+proxy.create(56471);
 
 // instantiate leaflet
 var map = L.map('map').setView([45, 4], 6);
-
-
 
 // change this with your key !
 var ignGeoportailDevModeKey = 'kiaagdc8wartm9h6uhvdbt3l';
@@ -91,18 +70,21 @@ map.addControl(drawControl);
 map.on('draw:created', function (e) {
     var type = e.layerType, layer = e.layer;
 
-    map.addLayer(layer);
+    drawnItems.addLayer(layer);
 
     var latLgs = layer.getLatLngs();
     var projLatLngs = [];
     for (var i = 0; i < latLgs.length; i++) {
         projLatLngs.push(L.CRS.EPSG3857.project(latLgs[i]));
     }
-    projLatLngs.push(L.CRS.EPSG3857.project(latLgs[latLgs.length - 1]));
+    projLatLngs.push(L.CRS.EPSG3857.project(latLgs[0]));
 
-    console.log('Doing ', projLatLngs);
+    console.log('Doing ', JSON.stringify(projLatLngs));
     var tiles = downloader.buildTileSets(projLatLngs, 2, 16);
     if (confirm('Do you to download all ' + tiles.length + ' tiles to the "out" directory ?')){
+
+        downloader.writeLayerDescription('Sample layer', latLgs, "out");
+
         var layerName = currentBaseLayer === mapLayer ? 'GEOGRAPHICALGRIDSYSTEMS.MAPS' : 'ORTHOIMAGERY.ORTHOPHOTOS';
         var evt = downloader.downloadTiles(tiles,
             'wxs.ign.fr',
@@ -118,7 +100,7 @@ map.on('draw:created', function (e) {
             prog.innerHTML = "done " + idx + " remaining " + tiles.length;
         });
         evt.on("error", function(err){
-            errReport.innerHTML = err.toString();
+            errReport.innerHTML = "ERROR: " +  err.toString();
         });
 
     }

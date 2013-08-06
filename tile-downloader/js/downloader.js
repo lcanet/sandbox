@@ -62,29 +62,19 @@ function buildTileSets(latLngs, fromZoom, toZoom) {
     // convert coords to JTS
     var coords = [];
     for (i = 0; i < latLngs.length; i++) {
-        coords.push(new jsts.geom.Coordinate(latLngs[0].x, latLngs[0].y));
+        coords.push(new jsts.geom.Coordinate(latLngs[i].x, latLngs[i].y));
     }
     var polygon = geometryFactory.createPolygon(geometryFactory.createLinearRing(coords), null);
 
-    // get the bounding box (todo: jsts should do that)
-    var minx = NaN, miny = NaN, maxx = NaN, maxy = NaN;
-    for (i = 0; i < coords.length; i++) {
-        var x = coords[i].x;
-        var y = coords[i].y;
-        minx = minx ? Math.min(minx, x) : x;
-        miny = miny ? Math.min(miny, y) : y;
-        maxx = maxx ? Math.max(maxx, x) : x;
-        maxy = maxy ? Math.max(maxy, y) : y;
-    }
-
+    // get the bounding box
+    var env = polygon.getEnvelopeInternal();
+    var minx = env.getMinX(), miny = env.getMinY(), maxx = env.getMaxX(), maxy = env.getMaxY();
     var matchingTiles = [];
 
     // loop on all zoo mlevels
     for (z = fromZoom; z <= toZoom;z++) {
         var fromTile = buildTileFromCoordinates(minx, maxy, z);
         var toTile = buildTileFromCoordinates(maxx, miny, z);
-        console.log("At level " + z + " from tile ", fromTile);
-        console.log("To tile ", toTile);
 
         for (i = fromTile.x; i <= toTile.x; i++){
             for (j = fromTile.y; j <= toTile.y; j++) {
@@ -115,6 +105,36 @@ function buildTileSets(latLngs, fromZoom, toZoom) {
     }
 
     return matchingTiles;
+}
+
+function writeLayerDescription(name, latLgs, toDir) {
+
+    var minLat = NaN, minLon = NaN, maxLat = NaN , maxLon = NaN, cenLat = 0, cenLon = 0;
+    for (var i = 0; i < latLgs.length; i++) {
+        var lat = latLgs[i].lat;
+        var lon = latLgs[i].lng;
+        minLat = isNaN(minLat) ? lat : Math.min(minLat, lat);
+        minLon = isNaN(minLon) ? lon : Math.min(minLon, lon);
+        maxLat = isNaN(maxLat) ? lat : Math.max(maxLat, lat);
+        maxLon = isNaN(maxLon) ? lon : Math.max(maxLon, lon);
+        cenLat += lat;
+        cenLon += lon;
+    }
+    cenLat = cenLat / latLgs.length;
+    cenLon = cenLon / latLgs.length;
+
+    // write json
+    var layerDesc = {
+        name: name,
+        center: [ cenLat, cenLon],
+        bounds: [ minLat, minLon, maxLat, maxLon]
+    };
+
+    fs.writeFile(toDir + "/layer.json", JSON.stringify(layerDesc), function(err){
+        if (err) {
+            console.log("Error write layer json desc");
+        }
+    });
 }
 
 function downloadTiles(tiles, host, key, layer, toDir) {
@@ -174,18 +194,19 @@ function downloadTiles(tiles, host, key, layer, toDir) {
 
 exports.buildTileSets = buildTileSets;
 exports.downloadTiles = downloadTiles;
+exports.writeLayerDescription = writeLayerDescription;
 
 // MAIN
-
 /*
 var latLngs = [
-    { x: 445277.96317309426, y: 5621521.486192066},
-    { x: 556597.4539663679, y: 5621521.486192066},
-    { x: 556597.4539663679, y: 5780349.220256351},
-    { x: 445277.96317309426, y: 5780349.220256351},
-    { x: 445277.96317309426, y: 5621521.486192066}
-];
-var tiles = buildTileSets(latLngs, 5, 8);
+    {"x":524663.7621494497,"y":5740726.572329877},
+    {"x":535059.1979962337,"y":5754179.4893080685},
+    {"x":543314.3970510329,"y":5751427.7562898},
+    {"x":545760.3819561583,"y":5735834.602519624},
+    {"x":532307.4649779674,"y":5724827.670446561},
+    {"x":524663.7621494497,"y":5740726.572329877}];
+var tiles = buildTileSets(latLngs, 2, 16);
 console.log(tiles.length);
-downloadTiles(tiles, 'wxs.ign.fr', 'kiaagdc8wartm9h6uhvdbt3l', 'GEOGRAPHICALGRIDSYSTEMS.MAPS', 'out');
-    */
+
+ downloadTiles(tiles, 'wxs.ign.fr', 'kiaagdc8wartm9h6uhvdbt3l', 'GEOGRAPHICALGRIDSYSTEMS.MAPS', 'out');
+ */
